@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="orthoguard" default="dist" basedir=".">
+    <description>Build JOSM OrthoGuard plugin</description>
+
+    <!-- Place an official JOSM tested JAR at lib/josm-tested.jar or override with -Djosm.jar=... -->
+    <property name="josm.jar" location="lib/josm-tested.jar" />
+    <property name="plugin.version" value="0.2.1" />
+    <!-- This build targets the user-reported JOSM r19613. Lower only after compatibility testing. -->
+    <property name="plugin.mainversion" value="19613" />
+    <property name="src.dir" value="src" />
+    <property name="build.dir" value="build/classes" />
+    <property name="dist.dir" value="dist" />
+
+    <target name="clean">
+        <delete dir="build" />
+        <delete dir="dist" />
+    </target>
+
+    <target name="check-josm-jar">
+        <available file="${josm.jar}" property="josm.jar.exists" />
+        <fail unless="josm.jar.exists" message="JOSM API JAR not found at ${josm.jar}. Download the current tested JOSM JAR and place it there, or build with -Djosm.jar=/path/to/josm-tested.jar." />
+    </target>
+
+    <target name="compile" depends="check-josm-jar">
+        <mkdir dir="${build.dir}" />
+        <javac srcdir="${src.dir}" destdir="${build.dir}" source="11" target="11"
+               encoding="UTF-8" includeantruntime="false" debug="true">
+            <classpath>
+                <pathelement location="${josm.jar}" />
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="dist" depends="compile">
+        <mkdir dir="${dist.dir}" />
+        <jar destfile="${dist.dir}/orthoguard.jar" basedir="${build.dir}">
+            <manifest>
+                <attribute name="Plugin-Class" value="org.openstreetmap.josm.plugins.orthoguard.OrthoGuardPlugin" />
+                <attribute name="Plugin-Mainversion" value="${plugin.mainversion}" />
+                <attribute name="Plugin-Version" value="${plugin.version}" />
+                <attribute name="Plugin-Minimum-Java-Version" value="11" />
+                <attribute name="Plugin-Description" value="JOSM building geometry QA: identify likely rectangular building footprints with interior corner angles different from 90 degrees; exclude rounded/multi-corner shapes; review and correct individually or in batches; and check before upload." />
+                <attribute name="Author" value="OrthoGuard contributors" />
+            </manifest>
+        </jar>
+        <echo message="Built ${dist.dir}/orthoguard.jar" />
+    </target>
+</project>
